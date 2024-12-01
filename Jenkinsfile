@@ -8,8 +8,12 @@ pipeline {
         //retry(1)
     }
     environment {
-        DEBUG = 'true'
         appVersion = '' // this will become global, we can use across pipeline
+        region = 'us-east-1'
+        account_id = '461997657539'
+        project = 'expense'
+        environment = 'dev'
+        component = 'backend'
     }
 
     stages {
@@ -32,13 +36,14 @@ pipeline {
             steps {
 
                     sh """
-                    docker build -t divyavut/backend:${appVersion} .
-                    docker images
+                    aws ecr get-login-password --region ${region} | docker login --username AWS --password-stdin ${account_id}.dkr.ecr.${region}.amazonaws.com
+                    docker build -t ${account_id}.dkr.ecr.${region}.amazonaws.com/${project}/${environment}/${component}:${appVersion} .
+                    docker images 
+                    docker push ${account_id}.dkr.ecr.us-east-1.amazonaws.com/expense/dev/backend:latest
                     """
             }
         }
     }
-
     post {
         always{
             echo "This sections runs always"
